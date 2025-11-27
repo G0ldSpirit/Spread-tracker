@@ -32,9 +32,20 @@ class handler(BaseHTTPRequestHandler):
                 'api_passphrase': api_passphrase
             })
             
-            # Get top markets by volume (limit to 30 for performance)
-            markets_response = client.get_markets(limit=30)
-            markets = markets_response if isinstance(markets_response, list) else []
+            # Get all markets
+            markets_response = client.get_markets()
+            
+            # Extract markets from response
+            if isinstance(markets_response, dict):
+                markets = markets_response.get('data', [])
+            elif isinstance(markets_response, list):
+                markets = markets_response
+            else:
+                markets = []
+            
+            # Sort by volume and take top 30
+            markets.sort(key=lambda x: float(x.get('volume', 0)), reverse=True)
+            markets = markets[:30]
             
             processed = []
             
